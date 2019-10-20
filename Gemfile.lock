@@ -51,6 +51,9 @@ GEM
     bootsnap (1.4.5)
       msgpack (~> 1.0)
     builder (3.2.3)
+    business_time (0.9.3)
+      activesupport (>= 3.2.0)
+      tzinfo
     byebug (11.0.1)
     capybara (3.15.1)
       addressable
@@ -78,6 +81,7 @@ GEM
     ffi (1.11.1)
     globalid (0.4.2)
       activesupport (>= 4.2.0)
+    holiday_jp (0.7.1)
     i18n (1.7.0)
       concurrent-ruby (~> 1.0)
     io-like (0.3.0)
@@ -192,10 +196,12 @@ PLATFORMS
 
 DEPENDENCIES
   bootsnap (>= 1.1.0)
+  business_time
   byebug
   capybara (>= 2.15)
   chromedriver-helper
   coffee-rails (~> 4.2)
+  holiday_jp
   jbuilder (~> 2.5)
   listen (>= 3.0.5, < 3.2)
   puma (~> 3.11)
