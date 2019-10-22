@@ -1,5 +1,5 @@
 namespace :get_booking_imformation do
-  task :sample do
+  task :sample => :environment do
     require "selenium-webdriver"
     require "date"
 
@@ -17,8 +17,11 @@ namespace :get_booking_imformation do
         "time" => {2 => "1回目 (8:00-10:00)", 3 => "2回目 (10:00-12:00)", 4 => "3回目 (12:00-14:00)", 5 => "4回目 (14:00-16:00)", 6 => "5回目 (16:00-18:00)", 7 => "6回目 (18:30-20:30)", 8 => "7回目 (20:30-22:30)"}
       } 
     }
-    try_counts   = 0
-    result       = []
+    try_counts    = 0
+    result        = []
+    beginning_day = Date.today
+    end_day       = Date.today.next_month.end_of_month
+    holidays      = Holiday.where(date: beginning_day..end_day).map{ |holiday| holiday.date }
 
     driver = Selenium::WebDriver.for :chrome
 
@@ -28,7 +31,7 @@ namespace :get_booking_imformation do
         month_counts = 0
         while month_counts < 2 do
           begin
-            get_schedules(driver, result, place_time[sports]["place"], place_time[sports]["time"])
+            get_schedules(driver, result, place_time[sports]["place"], place_time[sports]["time"], holidays)
             # カレンダーに戻る
             driver.execute_script "window.doAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantBackWAllAction);"
             sleep(5.seconds)
@@ -104,7 +107,7 @@ namespace :get_booking_imformation do
     end
   end
 
-  def get_schedules(driver, result, place, time)
+  def get_schedules(driver, result, place, time, holidays)
     # TODO: scriptsいらない説、、
     scripts = get_open_days_in_month(driver)
     start_day = scripts.first.gsub("selectDay((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 1, ", "")[0..-2].gsub(", ", "-").to_date
@@ -123,10 +126,9 @@ namespace :get_booking_imformation do
       (2..(place.length + 1)).to_a.each do |p|
         (2..(time.length + 1)).to_a.each do |t|
           alt = page.css("#disp > center > form > center > table > tbody > tr:nth-child(4) > td > table > tbody > tr > td:nth-child(1) > table > tbody > tr:nth-child(#{p}) > td:nth-child(#{t}) > img")[0]["alt"]
-                         #disp > center > form > center > table > tbody > tr:nth-child(4) > td > table > tbody > tr > td:nth-child(1) > table > tbody > tr:nth-child(3) > td:nth-child(5) > img
           if alt == "空き"
             # 土日祝 or ユーザーの指定した日付である場合、どこか一つでも空いてる時間があればresultに追加
-            if !(date).workday? || HolidayJp.holiday?(date) # || dbから取ってきた休みのリストと比較 list.include?(date)
+            if !(date).workday? || HolidayJp.holiday?(date) || holidays.include?(date)
               result << "#{date}, #{place[p]}, #{time[t]}"
               puts date, time[t]
             elsif t == 8

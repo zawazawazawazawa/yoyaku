@@ -6,7 +6,7 @@ class HolidaysController < ApplicationController
   def create
     @holiday = Holiday.new(holiday_params)
     if @holiday.save
-      redirect_to holidays_path
+      redirect_to root_path
     else
       render new_holidays_path
     end
@@ -15,7 +15,7 @@ class HolidaysController < ApplicationController
   def destroy
     @holiday = Holiday.find(params[:id])
     @holiday.destroy
-    redirect_to holidays_path
+    redirect_to root_path
   end
 
   private
