@@ -1,10 +1,75 @@
 namespace :get_booking_imformation do
   task :sample do
     require "selenium-webdriver"
+    require "date"
 
-    wait = Selenium::WebDriver::Wait.new(timeout: 30)
+    WEEKS        = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"]
+    SPORTS       = ["soccer", "futsal"]
+    place_time   = {
+      # soccerの場合、場所はにしじゅく未来公園
+      "soccer" => {
+        "place" => {2 => "多目的広場 (全面)", 3 => "多目的広場A面", 4 => "多目的広場B面"},
+        "time" =>  {2 => "1回目 (6:00-8:00)", 3 => "2回目 (8:00-10:00)", 4 => "3回目 (10:00-12:00)", 5 => "4回目 (12:00-14:00)", 6 => "5回目 (14:00-16:00)", 7 => "6回目 (16:00-18:00)", 8 => "7回目 (18:00-20:00)"}
+      },
+      # futsalの場合、場所は小管西フットサル場
+      "futsal" => {
+        "place" => {2 => "フットサル場A", 3 => "フットサル場B"},
+        "time" => {2 => "1回目 (8:00-10:00)", 3 => "2回目 (10:00-12:00)", 4 => "3回目 (12:00-14:00)", 5 => "4回目 (14:00-16:00)", 6 => "5回目 (16:00-18:00)", 7 => "6回目 (18:30-20:30)", 8 => "7回目 (20:30-22:30)"}
+      } 
+    }
+    try_counts   = 0
+    result       = []
 
     driver = Selenium::WebDriver.for :chrome
+
+    begin
+      SPORTS.each do |sports|
+        go_to_calendor(driver, sports)
+        month_counts = 0
+        while month_counts < 2 do
+          begin
+            get_schedules(driver, result, place_time[sports]["place"], place_time[sports]["time"])
+            # カレンダーに戻る
+            driver.execute_script "window.doAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantBackWAllAction);"
+            sleep(5.seconds)
+            next_month = Date.today.next_month.to_s.gsub("-", "")[0..-3] + "01"
+            # 翌月へ
+            driver.execute_script "moveCalender((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchMonthVacantWAllAction, #{next_month})"
+            month_counts += 1
+          rescue => e
+            puts e
+            if try_counts < 10
+              try_counts += 1
+              driver.navigate.refresh
+              sleep(2.seconds)
+              retry
+            else
+              raise
+            end
+          end
+        end
+    
+        puts "result"
+        puts result
+      end
+      driver.quit
+      if result.size > 0
+        
+      end
+    rescue => e
+      puts e
+      if try_counts < 10
+        try_counts += 1
+        driver.navigate.refresh
+        sleep(2.seconds)
+        retry
+      else
+        raise
+      end
+    end
+  end
+
+  def go_to_calendor(driver, sports)
     driver.navigate.to "https://rsv.shisetsu.city.katsushika.lg.jp/katsushika/web/index.jsp"
     sleep(5.seconds)
 
@@ -20,56 +85,75 @@ namespace :get_booking_imformation do
     driver.execute_script "window.sendPpsdCd((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchPpsAction, '200','2');"
     sleep(5.seconds)
 
-    # # サッカー
-    # driver.execute_script "window.doTransInstSrchBuildAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchBuildAction, '200' , '200300');"
-    # sleep(5.seconds)
+    if sports == "soccer"
+      # サッカー
+      driver.execute_script "window.doTransInstSrchBuildAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchBuildAction, '200' , '200300');"
+      sleep(5.seconds)
 
-    # # にいじゅくみらい公園
-    # driver.execute_script "window.sendBldCd((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchInstAction, '503200');"
-    # sleep(5.seconds)
-    
-    
-    # フットサル
-    driver.execute_script "window.doTransInstSrchBuildAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchBuildAction, '200' , '201100');"
+      # にいじゅくみらい公園
+      driver.execute_script "window.sendBldCd((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchInstAction, '503200');"
+      sleep(5.seconds)
+    elsif sports == "futsal"
+      # フットサル
+      driver.execute_script "doTransInstSrchBuildAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchBuildAction, '200' , '201100')"
+      sleep(5.seconds)
+
+      # 小管西フットサル場
+      driver.execute_script "sendBldCd((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchInstAction, '503300')"
+      sleep(5.seconds)
+    end
+  end
+
+  def get_schedules(driver, result, place, time)
+    # TODO: scriptsいらない説、、
+    scripts = get_open_days_in_month(driver)
+    start_day = scripts.first.gsub("selectDay((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 1, ", "")[0..-2].gsub(", ", "-").to_date
+    puts "start_day: ", start_day
+
+    # 日の予定確認画面へ
+    driver.execute_script "window.#{scripts.first}"
     sleep(5.seconds)
+    day_count = 0
 
-    # 小管西フットサル場
-    driver.find_element(:css, '#disp > center > form > table:nth-child(16) > tbody > tr:nth-child(4) > td:nth-child(3) > a > img').click
-    sleep(5.seconds)
+    while day_count < scripts.length
+      html = driver.page_source.encode('utf-8')
+      page = Nokogiri::HTML(html)
+      date = start_day + day_count
 
+      (2..(place.length + 1)).to_a.each do |p|
+        (2..(time.length + 1)).to_a.each do |t|
+          alt = page.css("#disp > center > form > center > table > tbody > tr:nth-child(4) > td > table > tbody > tr > td:nth-child(1) > table > tbody > tr:nth-child(#{p}) > td:nth-child(#{t}) > img")[0]["alt"]
+                         #disp > center > form > center > table > tbody > tr:nth-child(4) > td > table > tbody > tr > td:nth-child(1) > table > tbody > tr:nth-child(3) > td:nth-child(5) > img
+          if alt == "空き"
+            # 土日祝 or ユーザーの指定した日付である場合、どこか一つでも空いてる時間があればresultに追加
+            if !(date).workday? || HolidayJp.holiday?(date) # || dbから取ってきた休みのリストと比較 list.include?(date)
+              result << "#{date}, #{place[p]}, #{time[t]}"
+              puts date, time[t]
+            elsif t == 8
+              result << "#{date}, #{place[p]}, #{time[t]}"
+              puts date, time[t]
+            end
+          end
+        end
+      end
 
+      day_count += 1
+      puts "day_count: ", day_count 
 
+      # 翌日へ
+      driver.execute_script "doInstSrchVacantAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 2, gSrchSelectInstNo, gSrchSelectInstMax);"
+      sleep(5.seconds)
+    end
+  end
 
-    # # 施設の空き状況
-    # wait.until { driver.find_element(:css, '#disp > center > form > table:nth-child(5) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td:nth-child(1) > table > tbody > tr:nth-child(2) > td > a > img').displayed? }
-    # driver.find_element(:css, '#disp > center > form > table:nth-child(5) > tbody > tr:nth-child(1) > td > table > tbody > tr:nth-child(2) > td:nth-child(1) > table > tbody > tr:nth-child(2) > td > a > img').click
-    
-    # # 利用目的から
-    # wait.until { driver.find_element(:css, '#disp > center > form > table:nth-child(6) > tbody > tr:nth-child(3) > td > a > img').displayed? }
-    # driver.find_element(:css, '#disp > center > form > table:nth-child(6) > tbody > tr:nth-child(3) > td > a > img').click
-    
-    # # 屋外スポーツ
-    # wait.until { driver.find_element(:css, '#disp > center > form > table.tcontent > tbody > tr:nth-child(1) > td:nth-child(2) > a > img').displayed? }
-    # driver.find_element(:css, '#disp > center > form > table.tcontent > tbody > tr:nth-child(1) > td:nth-child(2) > a > img').click
-
-    # # # 以下サッカーとフットサルの２パターンに別れる
-    # # # サッカー
-    # # wait.until { driver.find_element(:css, '#disp > center > form > table:nth-child(17) > tbody > tr:nth-child(1) > td:nth-child(4) > a > img').displayed? }
-    # # driver.find_element(:css, '#disp > center > form > table:nth-child(17) > tbody > tr:nth-child(1) > td:nth-child(4) > a > img').click
-    
-    # # # にいじゅくみらい公園
-    # # wait.until { driver.find_element(:css, '#disp > center > form > table:nth-child(16) > tbody > tr:nth-child(3) > td:nth-child(2) > a > img').displayed? }
-    # # driver.find_element(:css, '#disp > center > form > table:nth-child(16) > tbody > tr:nth-child(3) > td:nth-child(2) > a > img').click
-
-    # # フットサル
-    # wait.until { driver.find_element(:css, '#disp > center > form > table:nth-child(17) > tbody > tr:nth-child(3) > td:nth-child(4) > a > img').displayed? }
-    # driver.find_element(:css, '#disp > center > form > table:nth-child(17) > tbody > tr:nth-child(3) > td:nth-child(4) > a > img').click
-
-    # # 小菅西フットサル場
-    # wait.until { driver.find_element(:css, '#disp > center > form > table:nth-child(16) > tbody > tr:nth-child(4) > td:nth-child(3) > a > img').displayed? }
-    # driver.find_element(:css, '#disp > center > form > table:nth-child(16) > tbody > tr:nth-child(4) > td:nth-child(3) > a > img').click
-
-    sleep(5.seconds)
-    driver.quit
+  def get_open_days_in_month(driver)
+    scripts = []
+    WEEKS.each do |day|
+      days = driver.find_elements(:css, "td.m_akitablelist_#{day} > a")
+      days.each do |d|
+        scripts << d.attribute('href')[11..-1]
+      end
+    end
+    scripts.sort!
   end
 end
