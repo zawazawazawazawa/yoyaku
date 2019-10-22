@@ -1,9 +1,4 @@
 class HolidaysController < ApplicationController
-  def index
-    # todo: 今月、翌月、翌々月に絞りたい
-    @holidays = Holiday.all
-  end
-
   def new
     @holiday = Holiday.new
   end

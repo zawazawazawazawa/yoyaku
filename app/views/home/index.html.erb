@@ -9,6 +9,7 @@
 
 <h3>休日扱い一覧</h3>
 <p>以下の年月日は休日扱いとし、どの時間帯であっても空きがあればメールで通知します</p>
+<p>登録した日付のうち、本日から翌々月の最終日までに当てはまるものが表示されています</p>
 <ul>
   <% @holidays.each do |holiday| %>
     <li><%= holiday.date %><%= link_to ' 削除する', holiday, method: :delete, data: {confirm: "削除しますか?"} %></li>
