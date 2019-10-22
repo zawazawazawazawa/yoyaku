@@ -1,0 +1,9 @@
+<h3>登録者一覧</h3>
+<p>以下の登録者のメールアドレスに通知します</p>
+<ul>
+  <% @users.each do |user| %>
+    <li><%= user.name %><%= link_to ' 削除する',url_for(action: :destroy, id: user.id),method: :delete, data: {confirm: "削除しますか?"} %></li>
+  <% end %>
+</ul>
+
+<%= link_to 'ユーザーの追加', url_for(new_user_path) %>

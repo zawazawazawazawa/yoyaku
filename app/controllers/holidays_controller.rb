@@ -11,7 +11,7 @@ class HolidaysController < ApplicationController
   def create
     @holiday = Holiday.new(holiday_params)
     if @holiday.save
-      redirect_to holiays_path
+      redirect_to holidays_path
     else
       render new_holidays_path
     end

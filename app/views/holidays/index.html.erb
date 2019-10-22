@@ -5,4 +5,5 @@
     <li><%= holiday.date %><%= link_to ' 削除する',url_for(action: :destroy, id: holiday.id),method: :delete, data: {confirm: "削除しますか?"} %></li>
   <% end %>
 </ul>
+<%= link_to '休日扱いの日の追加', url_for(new_holiday_path) %>
   
