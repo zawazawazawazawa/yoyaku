@@ -1,0 +1,8 @@
+<h3>休日扱い一覧</h3>
+<p>以下の年月日は休日扱いとし、どの時間帯であっても空きがあればメールで通知します</p>
+<ul>
+  <% @holidays.each do |holiday| %>
+    <li><%= holiday.date %><%= link_to ' 削除する',url_for(action: :destroy, id: holiday.id),method: :delete, data: {confirm: "削除しますか?"} %></li>
+  <% end %>
+</ul>
+  

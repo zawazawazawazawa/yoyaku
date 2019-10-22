@@ -1,0 +1,5 @@
+<h3>休日扱いにする日を入力してください</h3>
+<%= form_with model: @holiday do |form| %>
+  <%= form.date_field :date %>
+  <%= form.submit "保存"%>
+<% end %>
