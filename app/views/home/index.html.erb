@@ -1,2 +1,22 @@
-<h1>TITILE</h1>
+<h3>登録者一覧</h3>
+<p>以下の登録者のメールアドレスに通知します</p>
+<ul>
+  <% @users.each do |user| %>
+    <li><%= user.name %><%= link_to ' 削除する', user, method: :delete, data: {confirm: "削除しますか?"} %></li>
+  <% end %>
+</ul>
+<%= link_to 'ユーザーの追加', url_for(new_user_path) %>
+
+<h3>休日扱い一覧</h3>
+<p>以下の年月日は休日扱いとし、どの時間帯であっても空きがあればメールで通知します</p>
+<ul>
+  <% @holidays.each do |holiday| %>
+    <li><%= holiday.date %><%= link_to ' 削除する', holiday, method: :delete, data: {confirm: "削除しますか?"} %></li>
+  <% end %>
+</ul>
+<%= link_to '休日扱いの日の追加', url_for(new_holiday_path) %>
+
+<br/>
+<br/>
+<%= link_to '葛飾区の予約ページ', url_for('https://rsv.shisetsu.city.katsushika.lg.jp/katsushika/web/index.jsp') %>
 
