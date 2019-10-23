@@ -1,5 +1,5 @@
 namespace :get_booking_imformation do
-  task :sample => :environment do
+  task :get_imformation => :environment do
     require "selenium-webdriver"
     require "date"
 
