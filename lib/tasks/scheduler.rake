@@ -112,6 +112,7 @@ namespace :get_booking_imformation do
   def get_schedules(driver, result, place, time, holidays)
     # TODO: scriptsいらない説、、
     scripts = get_open_days_in_month(driver)
+    puts scripts
     puts "length: ", scripts.length
     start_day = scripts.first.gsub("selectDay((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 1, ", "")[0..-2].gsub(", ", "-").to_date
 
