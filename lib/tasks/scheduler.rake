@@ -23,7 +23,9 @@ namespace :get_booking_imformation do
     end_day       = Date.today.next_month.end_of_month
     holidays      = Holiday.where(date: beginning_day..end_day).map{ |holiday| holiday.date }
 
-    driver = Selenium::WebDriver.for :chrome
+    options = Selenium::WebDriver::Chrome::Options.new
+    options.add_argument('headless')
+    driver = Selenium::WebDriver.for :chrome, options: options
 
     begin
       SPORTS.each do |sports|
