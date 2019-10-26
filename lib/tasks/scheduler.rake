@@ -20,7 +20,7 @@ namespace :get_booking_imformation do
     try_counts    = 0
     result        = []
     beginning_day = Date.today
-    end_day       = Date.today.next_month.end_of_month
+    end_day       = Date.today.next_month.end_of_month + 1
     holidays      = Holiday.where(date: beginning_day..end_day).map{ |holiday| holiday.date }
 
     options = Selenium::WebDriver::Chrome::Options.new
