@@ -112,16 +112,16 @@ namespace :get_booking_imformation do
   def get_schedules(driver, result, place, time, holidays)
     # TODO: scriptsいらない説、、
     scripts = get_open_days_in_month(driver)
-    puts scripts
-    puts "length: ", scripts.length
     start_day = scripts.first.gsub("selectDay((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 1, ", "")[0..-2].gsub(", ", "-").to_date
+    days_in_month = start_day.end_of_month - start_day + 1
+    puts days_in_month
 
     # 日の予定確認画面へ
     driver.execute_script "window.#{scripts.first}"
     sleep(5.seconds)
     day_count = 0
 
-    while day_count < scripts.length
+    while day_count < days_in_month
       html = driver.page_source.encode('utf-8')
       page = Nokogiri::HTML(html)
       date = start_day + day_count
