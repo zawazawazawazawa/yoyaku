@@ -124,6 +124,7 @@ namespace :get_booking_imformation do
       html = driver.page_source.encode('utf-8')
       page = Nokogiri::HTML(html)
       date = start_day + day_count
+      puts "date: ", date
 
       (2..(place.length + 1)).to_a.each do |p|
         (2..(time.length + 1)).to_a.each do |t|
@@ -142,7 +143,6 @@ namespace :get_booking_imformation do
       end
 
       day_count += 1
-      puts "day_count: ", day_count 
 
       # 翌日へ
       driver.execute_script "doInstSrchVacantAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 2, gSrchSelectInstNo, gSrchSelectInstMax);"
