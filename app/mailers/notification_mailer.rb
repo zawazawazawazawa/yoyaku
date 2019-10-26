@@ -1,5 +1,5 @@
 class NotificationMailer < ApplicationMailer
-  default from: 'notifications@example.com'
+  default from: 'notifications@yoyaku.com'
  
   def notification(result)
     @result = result

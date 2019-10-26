@@ -59,7 +59,7 @@ namespace :get_booking_imformation do
       end
       driver.quit
       if result.size > 0
-        
+        NotificationMailer.notification(result).deliver_now!
       end
     rescue => e
       puts e
