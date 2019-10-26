@@ -20,7 +20,7 @@ namespace :get_booking_imformation do
     try_counts    = 0
     result        = []
     beginning_day = Date.today
-    end_day       = Date.today.next_month.end_of_month + 1
+    end_day       = Date.today.next_month.end_of_month
     holidays      = Holiday.where(date: beginning_day..end_day).map{ |holiday| holiday.date }
 
     options = Selenium::WebDriver::Chrome::Options.new
@@ -112,6 +112,7 @@ namespace :get_booking_imformation do
   def get_schedules(driver, result, place, time, holidays)
     # TODO: scriptsいらない説、、
     scripts = get_open_days_in_month(driver)
+    puts "length: ", scripts.length
     start_day = scripts.first.gsub("selectDay((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 1, ", "")[0..-2].gsub(", ", "-").to_date
 
     # 日の予定確認画面へ
