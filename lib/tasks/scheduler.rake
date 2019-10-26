@@ -113,7 +113,6 @@ namespace :get_booking_imformation do
     # TODO: scriptsいらない説、、
     scripts = get_open_days_in_month(driver)
     start_day = scripts.first.gsub("selectDay((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 1, ", "")[0..-2].gsub(", ", "-").to_date
-    puts "start_day: ", start_day
 
     # 日の予定確認画面へ
     driver.execute_script "window.#{scripts.first}"
