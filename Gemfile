@@ -27,6 +27,8 @@ gem 'selenium-webdriver'
 # manage horidays
 gem 'business_time'
 gem 'holiday_jp'
+# for sending mail
+gem 'sendgrid-ruby'
 # Use Redis adapter to run Action Cable in production
 # gem 'redis', '~> 4.0'
 # Use ActiveModel has_secure_password
