@@ -53,9 +53,6 @@ namespace :get_booking_imformation do
             end
           end
         end
-    
-        puts "result"
-        puts result
       end
       driver.quit
       if result.size > 0
@@ -114,7 +111,6 @@ namespace :get_booking_imformation do
     scripts = get_open_days_in_month(driver)
     start_day = scripts.first.gsub("selectDay((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 1, ", "")[0..-2].gsub(", ", "-").to_date
     days_in_month = start_day.end_of_month - start_day + 1
-    puts days_in_month
 
     # 日の予定確認画面へ
     driver.execute_script "window.#{scripts.first}"
@@ -125,7 +121,6 @@ namespace :get_booking_imformation do
       html = driver.page_source.encode('utf-8')
       page = Nokogiri::HTML(html)
       date = start_day + day_count
-      puts "date: ", date
 
       (2..(place.length + 1)).to_a.each do |p|
         (2..(time.length + 1)).to_a.each do |t|
@@ -134,10 +129,8 @@ namespace :get_booking_imformation do
             # 土日祝 or ユーザーの指定した日付である場合、どこか一つでも空いてる時間があればresultに追加
             if !(date).workday? || HolidayJp.holiday?(date) || holidays.include?(date)
               result << "#{date}, #{place[p]}, #{time[t]}"
-              puts date, time[t]
             elsif t == 8
               result << "#{date}, #{place[p]}, #{time[t]}"
-              puts date, time[t]
             end
           end
         end
