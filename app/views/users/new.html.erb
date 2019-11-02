@@ -1,4 +1,7 @@
 <h3>ユーザー名とメールを通知したいアドレスを入力してください</h3>
+<% if @user.errors.any? %>
+  <p>エラーです</p>
+<% end %>
 <%= form_with model: @user do |form| %>
   <label>名前</label>
   <%= form.text_field :name %>

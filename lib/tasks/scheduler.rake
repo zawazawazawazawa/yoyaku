@@ -23,7 +23,7 @@ namespace :get_booking_imformation do
     holidays      = Holiday.where(date: beginning_day..end_day).map{ |holiday| holiday.date }
 
     options = Selenium::WebDriver::Chrome::Options.new
-    # options.add_argument('headless')
+    options.add_argument('headless')
     driver = Selenium::WebDriver.for :chrome, options: options
 
     begin
@@ -64,10 +64,27 @@ namespace :get_booking_imformation do
           end
         end
       end
+      result.uniq!
       driver.quit
-      if result.size > 0
-        NotificationMailer.notification(result).deliver_now!
+
+      # 前回の結果を取得
+      last_r_id = Result.last&.r_id || 0
+      last_result = Result.where(r_id: last_r_id)
+      mail_result = []
+
+      # 今回取得した結果のうち、前回なかったものだけメールで送信
+      result.each do |r|
+        if last_result.include?(r)
+          mail_result << r
+        end
+
+        # dbには全て保存する
+        Result.create!(r_id: last_r_id + 1, text: r)
       end
+      if mail_result.size > 0
+        NotificationMailer.notification(mail_result).deliver_now!
+      end
+
     rescue => e
       puts "counts: ", try_counts, " Error in go_to_calender: ", e
       if try_counts < 10
