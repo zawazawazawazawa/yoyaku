@@ -89,6 +89,12 @@ namespace :get_booking_imformation do
         puts "current_result: ", result
       end
 
+      # 20回を超えたら古いものは削除する
+      r_ids = Result.all.map{|r| r.r_id}.sort.uniq
+      if r_ids.length > 20
+        Result.where(r_id: r_ids.first).destroy_all
+      end
+
     rescue => e
       puts "counts: ", try_counts, " Error in go_to_calender: ", e
       if try_counts < 10
