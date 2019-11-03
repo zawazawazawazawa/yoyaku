@@ -31,7 +31,7 @@ namespace :get_booking_imformation do
         go_to_calendor(driver, sports)
         month_counts = 0
         while month_counts < 2 do
-          start_date = Date.today
+          start_date = month_counts == 0 ? Date.today : Date.today.next_month.beginning_of_month
           year = start_date.strftime("%Y").to_i
           month = start_date.strftime("%m").to_i
           day = start_date.strftime("%d").to_i
@@ -39,17 +39,19 @@ namespace :get_booking_imformation do
       
           # 日の予定確認画面へ
           driver.execute_script "window.selectDay((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 1, #{year}, #{month}, #{day})"
-          sleep(5.seconds)
-          day_count = 0
+          sleep(3.seconds)
+          day_count = 1
 
           begin
             get_schedules(driver, result, place_time[sports]["place"], place_time[sports]["time"], holidays, start_date, day_count, days_in_month)
             # カレンダーに戻る
             driver.execute_script "window.doAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantBackWAllAction);"
-            sleep(5.seconds)
+            sleep(3.seconds)
             next_month = Date.today.next_month.to_s.gsub("-", "")[0..-3] + "01"
+            puts next_month
             # 翌月へ
             driver.execute_script "moveCalender((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchMonthVacantWAllAction, #{next_month})"
+  
             month_counts += 1
           rescue => e
             puts "counts: ", try_counts, " Error in get_schedule: ", e
@@ -110,36 +112,36 @@ namespace :get_booking_imformation do
 
   def go_to_calendor(driver, sports)
     driver.navigate.to "https://rsv.shisetsu.city.katsushika.lg.jp/katsushika/web/index.jsp"
-    sleep(5.seconds)
+    sleep(3.seconds)
 
     # 施設の空き状況
     driver.execute_script "window.canLogin();"
-    sleep(5.seconds)
+    sleep(3.seconds)
 
     # 利用目的から
     driver.execute_script "window.doPpsdSearchAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchPpsdAction);"
-    sleep(5.seconds)
+    sleep(3.seconds)
 
     # 屋外スポーツ
     driver.execute_script "window.sendPpsdCd((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchPpsAction, '200','2');"
-    sleep(5.seconds)
+    sleep(3.seconds)
 
     if sports == "soccer"
       # サッカー
       driver.execute_script "window.doTransInstSrchBuildAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchBuildAction, '200' , '200300');"
-      sleep(5.seconds)
+      sleep(3.seconds)
 
       # にいじゅくみらい公園
       driver.execute_script "window.sendBldCd((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchInstAction, '503200');"
-      sleep(5.seconds)
+      sleep(3.seconds)
     elsif sports == "futsal"
       # フットサル
       driver.execute_script "doTransInstSrchBuildAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchBuildAction, '200' , '201100')"
-      sleep(5.seconds)
+      sleep(3.seconds)
 
       # 小管西フットサル場
       driver.execute_script "sendBldCd((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWTransInstSrchInstAction, '503300')"
-      sleep(5.seconds)
+      sleep(3.seconds)
     end
   end
 
@@ -147,7 +149,7 @@ namespace :get_booking_imformation do
     while day_count < days_in_month
       html = driver.page_source.encode('utf-8')
       page = Nokogiri::HTML(html)
-      date = start_date + day_count
+      date = start_date + day_count - 1
 
       (2..(place.length + 1)).to_a.each do |p|
         (2..(time.length + 1)).to_a.each do |t|
@@ -156,8 +158,10 @@ namespace :get_booking_imformation do
             # 土日祝 or ユーザーの指定した日付である場合、どこか一つでも空いてる時間があればresultに追加
             if !(date).workday? || HolidayJp.holiday?(date) || holidays.include?(date)
               result << "#{date}, #{place[p]}, #{time[t]}"
+              puts "#{date}, #{place[p]}, #{time[t]}"
             elsif t == 8
               result << "#{date}, #{place[p]}, #{time[t]}"
+              puts "#{date}, #{place[p]}, #{time[t]}"
             end
           end
         end
@@ -167,7 +171,7 @@ namespace :get_booking_imformation do
 
       # 翌日へ
       driver.execute_script "doInstSrchVacantAction((_dom == 3) ? document.layers['disp'].document.form1 : document.form1, gRsvWInstSrchVacantWAllAction, 2, gSrchSelectInstNo, gSrchSelectInstMax);"
-      sleep(5.seconds)
+      sleep(3.seconds)
     end
   end
 end
