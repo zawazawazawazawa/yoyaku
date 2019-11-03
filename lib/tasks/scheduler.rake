@@ -69,20 +69,24 @@ namespace :get_booking_imformation do
 
       # 前回の結果を取得
       last_r_id = Result.last&.r_id || 0
-      last_result = Result.where(r_id: last_r_id)
+      last_result = Result.where(r_id: last_r_id).map{|r| r.text}
       mail_result = []
 
       # 今回取得した結果のうち、前回なかったものだけメールで送信
       result.each do |r|
-        if last_result.include?(r)
+        if !last_result.include?(r)
           mail_result << r
         end
 
         # dbには全て保存する
         Result.create!(r_id: last_r_id + 1, text: r)
       end
+
       if mail_result.size > 0
         NotificationMailer.notification(mail_result).deliver_now!
+      else
+        puts "last_result: ", last_result
+        puts "current_result: ", result
       end
 
     rescue => e
