@@ -86,6 +86,7 @@ namespace :get_booking_imformation do
 
       if mail_result.size > 0
         NotificationMailer.notification(mail_result).deliver_now!
+        puts 'send a mail'
       else
         puts "last_result: ", last_result
         puts "current_result: ", result
